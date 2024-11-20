@@ -52,7 +52,7 @@ class CurrencyManager {
   // API call to exchangerate-API
   Future<Map<String, dynamic>> fetchExchangeRates() async {
     final url = Uri.parse(
-        'https://v6.exchangerate-api.com/v6/6e887c29fd2f00c0b1a12ddd/latest/USD');
+        'https://v6.exchangerate-api.com/v6/_PUT_YOUR_KEY_HERE_/latest/USD');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
