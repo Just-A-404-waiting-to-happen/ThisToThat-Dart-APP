@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:myapp/models/time_manager.dart';
+import 'dart:async';
 
 class TimeScreen extends StatefulWidget {
   const TimeScreen({super.key});
@@ -11,25 +12,53 @@ class TimeScreen extends StatefulWidget {
 
 class _TimeScreenState extends State<TimeScreen> {
   TimeConverter timeManager = TimeConverter();
-  String _selectedFromCity = "Local";
+  String _selectedFromCity = "Phoenix";
   String _selectedToCity = "Tokyo";
-  String _displayToTime = "Tokyo";
-  String _displayFromTime = "Local";
+  String _displayLocalTime = "";
+  String _displayToTime = "";
+  List<String> codeList = [];
 
-  List<String> codeList = [
-    "Local",
-    "Phoenix",
-    "Pago_Pago",
-    "Tokyo",
-    "Cairo",
-    "Kiritimati"
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Get all cities from the map
+    // Get all cities and sort them
+    codeList.addAll(timeManager.cities.keys
+        // Remove Local from the rest
+        .toList()
+      ..sort());
+    updateTime();
+    // Update time every second
+    Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          updateTime();
+        });
+      }
+    });
+  }
+
+  void updateTime() {
+    _displayLocalTime = timeManager.getTimeIn(_selectedFromCity);
+    _displayToTime = timeManager.getTimeIn(_selectedToCity);
+  }
+
+  String getTimeDifferenceWithDay() {
+    String difference =
+        timeManager.getTimeDifference(_selectedFromCity, _selectedToCity);
+    int diff = int.parse(difference.split(" ")[0]); // Get the number part
+
+    if (diff < 0) {
+      return "$difference (Previous Day)";
+    }
+    return difference;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Time Converter"),
-        //backgroundColor: Colors.black,
       ),
       body: Container(
         color: const Color.fromARGB(255, 96, 125, 139),
@@ -37,48 +66,48 @@ class _TimeScreenState extends State<TimeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Input Field
+            // Local time display
             Container(
               color: const Color.fromARGB(154, 255, 255, 255),
-              padding: const EdgeInsets.all(16.0), // Output Field
+              padding: const EdgeInsets.all(16.0),
               child: Text(
-                "Local: $_displayFromTime",
+                "Local Time: $_displayLocalTime",
                 style: const TextStyle(fontSize: 28),
               ),
             ),
             const SizedBox(height: 16),
-            // Dropdown Menus for Currency Selection
+            // Dropdown Menus
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                    child: Container(
-                  color: const Color.fromARGB(155, 255, 255, 255),
-                  padding: const EdgeInsets.all(16.0),
-                  child: DropdownButton<String>(
-                    value: _selectedFromCity,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedFromCity = value!;
-                        _displayFromTime =
-                            timeManager.getTimeIn(_selectedFromCity);
-                      });
-                    },
-                    items: codeList
-                        .map((code) => DropdownMenuItem(
-                              value: code,
-                              child: Text(code,
-                                  style: const TextStyle(fontSize: 28)),
-                            ))
-                        .toList(),
+                  child: Container(
+                    color: const Color.fromARGB(155, 255, 255, 255),
+                    padding: const EdgeInsets.all(16.0),
+                    child: DropdownButton<String>(
+                      value: _selectedFromCity,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedFromCity = value!;
+                          updateTime();
+                        });
+                      },
+                      items: codeList
+                          .map((code) => DropdownMenuItem(
+                                value: code,
+                                child: Text(code,
+                                    style: const TextStyle(fontSize: 20)),
+                              ))
+                          .toList(),
+                    ),
                   ),
-                )),
+                ),
                 Container(
-                   color: const Color.fromARGB(89, 255, 255, 255),
-                   padding: const EdgeInsets.all(16.0),
-                   child: const Icon(
-                        Icons.arrow_forward ,
-                   ),
+                  color: const Color.fromARGB(89, 255, 255, 255),
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                  ),
                 ),
                 Expanded(
                   child: Container(
@@ -89,9 +118,7 @@ class _TimeScreenState extends State<TimeScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedToCity = value!;
-                          _displayToTime =
-                              timeManager.getTimeDifference( 
-                              _selectedFromCity, _selectedToCity);
+                          updateTime();
                         });
                       },
                       items: codeList
@@ -99,7 +126,7 @@ class _TimeScreenState extends State<TimeScreen> {
                                 value: code,
                                 child: Text(
                                   code,
-                                  style: const TextStyle(fontSize: 28),
+                                  style: const TextStyle(fontSize: 20),
                                 ),
                               ))
                           .toList(),
@@ -108,15 +135,23 @@ class _TimeScreenState extends State<TimeScreen> {
                 )
               ],
             ),
-            const SizedBox(height: 10),
-            // Conversion Button
-
-            const SizedBox(height: 10),
+            const SizedBox(height: 16),
+            // Selected city time
             Container(
               color: const Color.fromARGB(154, 255, 255, 255),
-              padding: const EdgeInsets.all(16.0), // Output Field
+              padding: const EdgeInsets.all(16.0),
               child: Text(
-                "$_selectedToCity: $_displayToTime",
+                "$_selectedToCity Time: $_displayToTime",
+                style: const TextStyle(fontSize: 28),
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Time difference
+            Container(
+              color: const Color.fromARGB(154, 255, 255, 255),
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "Time Difference: ${getTimeDifferenceWithDay()}",
                 style: const TextStyle(fontSize: 28),
               ),
             ),
