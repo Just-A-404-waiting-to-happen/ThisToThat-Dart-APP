@@ -1,9 +1,9 @@
-// Elbaraa Abdalla
-class TimeConverter {
-  // Map of capitals and their UTC offsets
-  final Map<String, int> cities = {
-    'Local': 0,
+//import 'package:flutter/material.dart';
+//import 'dart:async';
 
+// Time Converter Class
+class TimeConverter {
+  final Map<String, int> cities = {
     // Europe
     'London': 0, // UK
     'Paris': 1, // France
@@ -184,31 +184,26 @@ class TimeConverter {
     'Kiritimati': 14, // Kiribati
   };
 
-  // Get local time
   String getLocalTime() {
     DateTime now = DateTime.now();
     return '${pad(now.hour)}:${pad(now.minute)}:${pad(now.second)}';
   }
 
-  // Get time in specific city
   String getTimeIn(String city) {
     if (!cities.containsKey(city)) return "City not found";
-    // Get current UTC time and add city's offset
     DateTime now = DateTime.now().toUtc();
     DateTime cityTime = now.add(Duration(hours: cities[city]!));
-
     return '${pad(cityTime.hour)}:${pad(cityTime.minute)}:${pad(cityTime.second)}';
   }
 
-  // Get time difference between cities
   String getTimeDifference(String fromCity, String toCity) {
-    // Checks if the input is valid
     if (!cities.containsKey(fromCity) || !cities.containsKey(toCity)) {
       return "Invalid city";
     }
 
     int difference = cities[toCity]! - cities[fromCity]!;
     bool nextDay = false;
+    bool previousDay = false;
 
     DateTime now = DateTime.now().toUtc();
     DateTime fromTime = now.add(Duration(hours: cities[fromCity]!));
@@ -218,50 +213,14 @@ class TimeConverter {
       nextDay = true;
     }
 
-    return '${difference >= 0 ? "+" : ""}$difference${nextDay ? " Next Day" : ""}';
+    if (difference < 0) {
+      previousDay = true;
+    }
+
+    return '${difference >= 0 ? "+" : ""}$difference${nextDay ? " Next Day" : ""}${previousDay ? " Previous Day" : ""}';
   }
 
   String pad(int number) {
     return number.toString().padLeft(2, '0');
   }
 }
-
-// void main() {
-//     TimeConverter converter = TimeConverter();
-
-//     // Test 1: Get local time
-//     print('Local Time');
-//     print('Local time: ${converter.getLocalTime()}');
-//     print('');
-
-//     // Test 2: Get time in specific cities
-//     print('Time in specific cities');
-//     print('Tokyo: ${converter.getTimeIn("Tokyo")}');
-//     print('New_York: ${converter.getTimeIn("New_York")}');
-//     print('London: ${converter.getTimeIn("London")}');
-//     print('Dubai: ${converter.getTimeIn("Dubai")}');
-//     print('Pago_Pago: ${converter.getTimeIn("Pago_Pago")}');
-//     print('Kiritimati: ${converter.getTimeIn("Kiritimati")}');
-//     print('');
-
-//     // Test 3: Test invalid city
-//     print('Invalid city');
-//     print('Invalid city test: ${converter.getTimeIn("FakeCity")}');
-//     print('');
-
-//     // Test 4: Time differences between cities
-//     print('Time difference between cities');
-//     //large time differences (should show next day)
-//     print('Tokyo → New_York: ${converter.getTimeDifference("Tokyo", "New_York")}');
-//     print('New_York → Tokyo: ${converter.getTimeDifference("New_York", "Tokyo")}');
-//     //smaller time differences
-//     print('London → Paris: ${converter.getTimeDifference("London", "Paris")}');
-//     print('Dubai → Singapore: ${converter.getTimeDifference("Dubai", "Singapore")}');
-//     //cities in same timezone
-//     print('Paris → Berlin: ${converter.getTimeDifference("Paris", "Berlin")}');
-//     //invalid cities
-//     print('Invalid cities: ${converter.getTimeDifference("FakeCity", "Tokyo")}');
-//     //extreme time differences
-//     print('Pago_Pago → Kiritimati: ${converter.getTimeDifference("Pago_Pago", "Kiritimati")}');
-//     print('Kiritimati → Pago_Pago: ${converter.getTimeDifference("Kiritimati", "Pago_Pago")}');
-// }
